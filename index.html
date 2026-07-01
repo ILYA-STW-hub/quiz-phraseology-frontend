@@ -1,20 +1,200 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Фразеология ФАП‑449</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Авиационный тест по ФАП</title>
+  <style>
+    body {
+      font-family: system-ui, Roboto, Arial, sans-serif;
+      color: #333;
+      background-color: #eef2f7; 
+      background-image: url("https://images.unsplash.com/photo-1542262175-0a1f0feb7063?q=80&w=1920&auto=format&fit=crop");
+      background-size: cover;
+      background-position: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 0 1rem;
+      position: relative;
+    }
+
+    .content-wrapper {
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      padding: 2rem;
+      max-width: 900px;
+      width: 100%;
+      margin: 2rem auto;
+      flex: 1;
+      position: relative;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    h1 { text-align: center; color: #1a1a1a; font-size: 1.5rem; margin: 0 0 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    h2 { text-align: center; color: #0056b3; font-size: 1.7rem; margin: 0.4rem 0 1.5rem; }
+
+    .controls { text-align: center; margin-bottom: 2rem; }
+    
+    button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    #start-btn { background: #0056b3; color: white; }
+    #start-btn:hover { background: #004494; transform: translateY(-2px); }
+    
+    #submit-btn, #retry-btn, #next-btn {
+      background: #28a745;
+      color: white;
+      margin-top: 1rem;
+    }
+    #submit-btn:hover, #retry-btn:hover, #next-btn:hover { 
+      background: #218838; 
+      transform: translateY(-2px);
+    }
+
+    .question-block {
+      border: 1px solid #ddd;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .question-text {
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      color: #2c3e50;
+    }
+    label {
+      display: block;
+      margin: 0.6rem 0;
+      cursor: pointer;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    label:hover { background: #f0f7ff; }
+    input[type="radio"] { margin-right: 0.8rem; }
+
+    #quiz, #result-area { display: none; }
+    
+    .question-counter {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+
+    #result-area {
+      margin-top: 2.5rem;
+      text-align: center;
+    }
+    .score-box {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin: 1.5rem 0;
+      padding: 1.2rem;
+      border-radius: 10px;
+      background: #fff;
+      border: 2px solid transparent;
+    }
+    .correct-score { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+    .wrong-score { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+    .errors-list {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 1.5rem;
+      text-align: left;
+      padding: 0 1rem;
+    }
+    .error-item {
+      border-left: 5px solid #dc3545;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.8rem;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .error-question { font-weight: bold; color: #333; margin-bottom: 0.4rem; font-size: 0.95rem; }
+    .error-correct { color: #155724; font-weight: bold; font-size: 0.9rem; }
+
+    footer {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #666;
+      padding: 1.5rem 0;
+      margin-top: auto;
+    }
+
+    #fireworks-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.95;
+    }
+
+    @media (max-width: 480px) {
+      .content-wrapper { padding: 1.2rem; margin: 1rem auto; border-radius: 0; }
+      h1, h2 { font-size: 1.2rem; }
+      button { padding: 0.8rem 1.4rem; }
+      .question-counter { font-size: 1rem; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Фразеология ФАП‑449</h1>
-  <div id="question-area">
-    <p id="question-text">Загрузка вопроса...</p>
-    <form id="answer-form">
-      <input type="text" id="user-answer" placeholder="Ваш ответ" required />
-      <button type="submit">Ответить</button>
-    </form>
+  <canvas id="fireworks-canvas" width="1366" height="662"></canvas>
+
+  <div class="content-wrapper">
+    <h1>ФАП «Порядок осуществления радиосвязи при ОВД в пределах территории РФ»</h1>
+    <p style="font-size: 0.85rem; color: #8B0000; text-align: center; margin-top: 5px;">
+      Утверждены приказом Минтранса России от 25 ноября 2025 г. N 414
+    </p>
+    <p style="font-size: 0.8rem; color: #8B0000; text-align: center; margin: 2px 0 0;">
+      (Зарегистрировано в Минюсте России 03.02.2026 N 85196)
+    </p>
+    <h2>Тест по фразеологии</h2>
+    <div class="controls">
+      <button id="start-btn">Начать тест</button>
+    </div>
+
+    <div id="quiz">
+      <div id="counter-display" class="question-counter"></div>
+      <div id="current-question"></div>
+      <button id="next-btn" style="display:none;">Далее</button>
+      <button id="submit-btn" style="display:none;">Завершить тест</button>
+    </div>
+
+    <div id="result-area">
+      <h2>Результаты теста</h2>
+      <div id="score" class="score-box"></div>
+      <div id="percentage" class="score-box" style="color:#0056b3;"></div>
+      <div class="errors-list" id="errors"></div>
+      <div class="actions">
+        <button id="retry-btn">Пройти ещё раз</button>
+      </div>
+    </div>
   </div>
-  <div id="result"></div>
+
+  <footer>
+    Copyright © 2026 Шевцов Илья Дмитриевич. АДЦ Ставрополь.
+  </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
